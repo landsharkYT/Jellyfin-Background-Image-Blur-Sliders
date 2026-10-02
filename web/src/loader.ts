@@ -1,7 +1,8 @@
 import { AppearanceApi } from './api';
+import { decorateActionSheet } from './actionSheet';
 import { openTitleEditor } from './editor';
 import type { EffectiveAppearance } from './model';
-import { applyAppearance, applyPanel, clearAppearance, installStyles } from './style';
+import { applyAppearance, clearAppearance, installStyles } from './style';
 
 window.__backgroundBlurEditorDispose?.();
 
@@ -156,29 +157,6 @@ function readItemId(): string | null {
   }
   const value = new URLSearchParams(hash.slice(queryIndex + 1)).get('id');
   return value !== null && /^[0-9a-f-]{32,36}$/i.test(value) ? value : null;
-}
-
-function decorateActionSheet(current: EffectiveAppearance): boolean {
-  const sheets = document.querySelectorAll<HTMLElement>('dialog.actionSheet, .actionSheet');
-  const sheet = sheets.item(sheets.length - 1);
-  if (sheet === null || sheet.querySelector('[data-bibe-edit-action]') !== null) {
-    return sheet !== null;
-  }
-
-  applyPanel(sheet, current.values);
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'listItem listItem-button actionSheetMenuItem emby-button';
-  button.dataset.bibeEditAction = 'true';
-  button.innerHTML = '<span class="listItemIcon material-icons" aria-hidden="true">blur_on</span><span class="listItemBody"></span>';
-  const label = button.querySelector<HTMLElement>('.listItemBody');
-  if (label !== null) {
-    label.textContent = current.viewedKind === 'Season' || current.viewedKind === 'Episode'
-      ? 'Edit series background appearance'
-      : 'Edit background appearance';
-  }
-  sheet.append(button);
-  return true;
 }
 
 function removeActions(): void {

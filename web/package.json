@@ -1,7 +1,7 @@
 {
   "name": "background-image-blur-editor-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "build": "node esbuild.mjs",
@@ -9,9 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/jsdom": "27.0.0",
     "@types/node": "24.5.2",
-    "esbuild": "^0.28.2",
+    "esbuild": "0.28.2",
+    "jsdom": "27.0.0",
     "typescript": "5.9.3",
-    "vitest": "^5.0.3"
+    "vitest": "5.0.3"
   }
 }

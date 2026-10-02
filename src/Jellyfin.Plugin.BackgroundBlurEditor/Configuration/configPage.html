@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Background Image Blur Editor</title>
+</head>
+<body>
+    <div id="BackgroundBlurEditorConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary bibe-admin-host"></div>
+        </div>
+        <script>
+            (function () {
+                var source = ApiClient.getUrl('/BackgroundBlurEditor/v1/assets/admin.js?version=0.1.0');
+                var existing = document.querySelector('script[data-background-blur-editor-admin]');
+                if (existing) existing.remove();
+                var script = document.createElement('script');
+                script.src = source;
+                script.dataset.backgroundBlurEditorAdmin = 'true';
+                document.head.appendChild(script);
+            }());
+        </script>
+    </div>
+</body>
+</html>

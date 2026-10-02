@@ -1,0 +1,29 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build release archive
+        run: ./scripts/build-release.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: background-blur-editor
+          path: artifacts/*.zip
+          if-no-files-found: error

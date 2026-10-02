@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Jellyfin.Plugin.BackgroundBlurEditor/Jellyfin.Plugin.BackgroundBlurEditor.csproj" />
+  <Project Path="tests/Jellyfin.Plugin.BackgroundBlurEditor.Tests/Jellyfin.Plugin.BackgroundBlurEditor.Tests.csproj" />
+</Solution>

@@ -4,12 +4,17 @@ const STYLE_ID = 'bibe-styles';
 const PANEL_SELECTORS = ['.detailRibbon', '.detailPageSecondaryContainer'];
 
 const css = `
-.bibe-backdrop {
+.bibe-backdrop,
+html .backdropContainer .bibe-backdrop,
+#itemDetailPage #itemBackdrop.bibe-backdrop {
   opacity: calc(var(--bibe-backdrop-opacity, 100) / 100) !important;
-  filter: var(--bibe-original-backdrop-filter, ) blur(calc(var(--bibe-backdrop-blur, 0) * 1px)) !important;
+  filter: var(--bibe-base-backdrop-filter, ) blur(calc(var(--bibe-backdrop-blur, 0) * 1px)) !important;
   transition: opacity 150ms ease, filter 150ms ease;
 }
-.bibe-panel {
+.bibe-panel,
+#itemDetailPage .detailRibbon.bibe-panel,
+#itemDetailPage .detailPageSecondaryContainer.bibe-panel,
+html .actionSheet.bibe-panel {
   background-color: rgb(var(--bibe-panel-rgb, 24 24 24) / calc(var(--bibe-panel-opacity, 70) / 100)) !important;
   -webkit-backdrop-filter: blur(calc(var(--bibe-panel-blur, 0) * 1px)) !important;
   backdrop-filter: blur(calc(var(--bibe-panel-blur, 0) * 1px)) !important;
@@ -90,7 +95,7 @@ export function applyAppearance(values: Appearance): void {
   ]);
   for (const backdrop of backdrops) {
     const existing = window.getComputedStyle(backdrop).filter;
-    backdrop.style.setProperty('--bibe-original-backdrop-filter', existing === 'none' ? '' : existing);
+    backdrop.style.setProperty('--bibe-base-backdrop-filter', removeBlur(existing));
     backdrop.classList.add('bibe-backdrop');
     backdrop.style.setProperty('--bibe-backdrop-opacity', String(values.backdropOpacity));
     backdrop.style.setProperty('--bibe-backdrop-blur', String(values.backdropBlur));
@@ -116,7 +121,7 @@ export function clearAppearance(): void {
     for (const property of [
       '--bibe-backdrop-opacity',
       '--bibe-backdrop-blur',
-      '--bibe-original-backdrop-filter',
+      '--bibe-base-backdrop-filter',
       '--bibe-panel-rgb',
       '--bibe-panel-opacity',
       '--bibe-panel-blur'
@@ -124,6 +129,13 @@ export function clearAppearance(): void {
       element.style.removeProperty(property);
     }
   }
+}
+
+function removeBlur(filter: string): string {
+  if (filter === 'none') {
+    return '';
+  }
+  return filter.replace(/\bblur\([^)]*\)/giu, '').replace(/\s+/gu, ' ').trim();
 }
 
 export function supportsPanelBlur(): boolean {

@@ -1,6 +1,38 @@
 import type { EffectiveAppearance } from './model';
 import { applyPanel } from './style';
 
+export function activateEditorAction(event: MouseEvent, openEditor: () => void): boolean {
+  if (!(event.target instanceof Element)) {
+    return false;
+  }
+
+  const action = event.target.closest<HTMLElement>('[data-bibe-edit-action]');
+  if (action === null) {
+    return false;
+  }
+
+  event.preventDefault();
+  const sheet = action.closest<HTMLElement>('.actionSheet');
+  if (sheet === null) {
+    window.setTimeout(openEditor, 0);
+    return true;
+  }
+
+  let opened = false;
+  let fallback = 0;
+  const openOnce = (): void => {
+    if (opened) {
+      return;
+    }
+    opened = true;
+    window.clearTimeout(fallback);
+    openEditor();
+  };
+  sheet.addEventListener('close', openOnce, { once: true });
+  fallback = window.setTimeout(openOnce, 500);
+  return true;
+}
+
 export function decorateActionSheet(current: EffectiveAppearance): boolean {
   const sheets = document.querySelectorAll<HTMLElement>('dialog.actionSheet, .actionSheet');
   const sheet = sheets.item(sheets.length - 1);

@@ -1,5 +1,5 @@
 import { AppearanceApi } from './api';
-import { decorateActionSheet } from './actionSheet';
+import { activateEditorAction, decorateActionSheet } from './actionSheet';
 import { openTitleEditor } from './editor';
 import type { EffectiveAppearance } from './model';
 import { applyAppearance, clearAppearance, installStyles } from './style';
@@ -95,23 +95,15 @@ async function mount(): Promise<void> {
       return;
     }
 
-    const custom = event.target.closest<HTMLElement>('[data-bibe-edit-action]');
-    if (custom !== null) {
-      event.preventDefault();
-      event.stopPropagation();
-      const itemId = current.requestedItemId;
-      const sheet = custom.closest<HTMLElement>('.actionSheet');
-      if (sheet instanceof HTMLDialogElement) {
-        sheet.close();
-      } else {
-        sheet?.remove();
-      }
-      void openTitleEditor(api, itemId, values => {
+    const requestedItemId = current.requestedItemId;
+    if (activateEditorAction(event, () => {
+      void openTitleEditor(api, requestedItemId, values => {
         applyAppearance(values);
         if (current !== null) {
           current = { ...current, values };
         }
       });
+    })) {
       return;
     }
 

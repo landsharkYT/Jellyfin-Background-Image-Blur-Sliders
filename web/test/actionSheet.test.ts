@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { decorateActionSheet } from '../src/actionSheet';
+import { activateEditorAction, decorateActionSheet } from '../src/actionSheet';
 import type { EffectiveAppearance } from '../src/model';
 
 const appearance = {
@@ -50,5 +50,40 @@ describe('action-sheet decoration', () => {
 
     expect(decorateActionSheet(appearance)).toBe(false);
     expect(document.querySelector('[data-bibe-edit-action]')).toBeNull();
+  });
+});
+
+describe('editor command activation', () => {
+  it('allows Jellyfin to receive the click and remove its modal backdrop', () => {
+    document.body.innerHTML = `
+      <div class="dialogContainer">
+        <dialog class="actionSheet">
+          <div class="actionSheetScroller">
+            <button data-bibe-edit-action="true"><span class="label">Edit</span></button>
+          </div>
+        </dialog>
+      </div>`;
+    const sheet = document.querySelector<HTMLDialogElement>('.actionSheet');
+    const label = document.querySelector<HTMLElement>('.label');
+    if (sheet === null || label === null) {
+      throw new Error('Test action sheet was not created.');
+    }
+    sheet.close = vi.fn();
+    const opened = vi.fn();
+    sheet.addEventListener('click', () => {
+      sheet.closest('.dialogContainer')?.remove();
+      sheet.dispatchEvent(new Event('close'));
+    });
+    const listener = (event: MouseEvent): void => {
+      activateEditorAction(event, opened);
+    };
+    document.addEventListener('click', listener, true);
+
+    label.click();
+
+    document.removeEventListener('click', listener, true);
+    expect(document.querySelector('.dialogContainer')).toBeNull();
+    expect(sheet.close).not.toHaveBeenCalled();
+    expect(opened).toHaveBeenCalledOnce();
   });
 });

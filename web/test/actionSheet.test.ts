@@ -122,4 +122,44 @@ describe('action-sheet viewport fit', () => {
 
     expect(sheet.style.left).toBe('230px');
   });
+
+  it('corrects the position Jellyfin assigns after the sheet is decorated', async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `
+      <div class="dialogContainer">
+        <dialog class="actionSheet">
+          <div class="actionSheetScroller"></div>
+        </dialog>
+      </div>`;
+    const sheet = document.querySelector<HTMLElement>('.actionSheet');
+    if (sheet === null) {
+      throw new Error('Test action sheet was not created.');
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 500 });
+    Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 500 });
+    sheet.style.left = '100px';
+    sheet.getBoundingClientRect = () => {
+      const left = Number.parseFloat(sheet.style.left);
+      return {
+        x: left,
+        y: 100,
+        left,
+        top: 100,
+        right: left + 260,
+        bottom: 500,
+        width: 260,
+        height: 400,
+        toJSON: () => ({})
+      };
+    };
+
+    expect(decorateActionSheet(appearance)).toBe(true);
+    vi.advanceTimersByTime(0);
+    sheet.style.left = '300px';
+    await Promise.resolve();
+    vi.advanceTimersByTime(0);
+
+    expect(sheet.style.left).toBe('230px');
+    vi.useRealTimers();
+  });
 });

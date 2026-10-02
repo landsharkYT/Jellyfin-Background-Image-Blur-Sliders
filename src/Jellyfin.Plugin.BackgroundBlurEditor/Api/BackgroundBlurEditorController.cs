@@ -34,7 +34,7 @@ public sealed class BackgroundBlurEditorController : ControllerBase
     [Authorize]
     public ActionResult GetSession()
     {
-        return Ok(new { CanManage = User.IsInRole("Administrator") });
+        return Ok(new SessionDto(User.IsInRole("Administrator")));
     }
 
     /// <summary>Returns effective appearance values for one visible item.</summary>

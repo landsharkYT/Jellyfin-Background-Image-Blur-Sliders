@@ -1,75 +1,83 @@
+using System.Text.Json.Serialization;
 using Jellyfin.Plugin.BackgroundBlurEditor.Domain;
 
 namespace Jellyfin.Plugin.BackgroundBlurEditor.Api;
 
 /// <summary>Wire representation of fully resolved values.</summary>
 public sealed record AppearanceDto(
-    int BackdropOpacity,
-    int BackdropBlur,
-    int PanelGlassOpacity,
-    int PanelGlassBlur);
+    [property: JsonPropertyName("backdropOpacity")] int BackdropOpacity,
+    [property: JsonPropertyName("backdropBlur")] int BackdropBlur,
+    [property: JsonPropertyName("panelGlassOpacity")] int PanelGlassOpacity,
+    [property: JsonPropertyName("panelGlassBlur")] int PanelGlassBlur);
 
 /// <summary>Wire representation of optional per-title values.</summary>
 public sealed record AppearanceOverrideDto(
-    int? BackdropOpacity,
-    int? BackdropBlur,
-    int? PanelGlassOpacity,
-    int? PanelGlassBlur);
+    [property: JsonPropertyName("backdropOpacity")] int? BackdropOpacity,
+    [property: JsonPropertyName("backdropBlur")] int? BackdropBlur,
+    [property: JsonPropertyName("panelGlassOpacity")] int? PanelGlassOpacity,
+    [property: JsonPropertyName("panelGlassBlur")] int? PanelGlassBlur);
 
 /// <summary>Effective values available to a signed-in viewer.</summary>
 public sealed record EffectiveAppearanceDto(
-    string RequestedItemId,
-    string OwnerItemId,
-    string TitleName,
-    string TitleKind,
-    string ViewedKind,
-    bool HasBackdrop,
-    AppearanceDto Values);
+    [property: JsonPropertyName("requestedItemId")] string RequestedItemId,
+    [property: JsonPropertyName("ownerItemId")] string OwnerItemId,
+    [property: JsonPropertyName("titleName")] string TitleName,
+    [property: JsonPropertyName("titleKind")] string TitleKind,
+    [property: JsonPropertyName("viewedKind")] string ViewedKind,
+    [property: JsonPropertyName("hasBackdrop")] bool HasBackdrop,
+    [property: JsonPropertyName("values")] AppearanceDto Values);
 
 /// <summary>Editable values available to an administrator.</summary>
 public sealed record EditableAppearanceDto(
-    string RequestedItemId,
-    string OwnerItemId,
-    string TitleName,
-    string TitleKind,
-    string ViewedKind,
-    bool HasBackdrop,
-    AppearanceDto Global,
-    AppearanceOverrideDto Override,
-    AppearanceDto Effective,
-    string Revision);
+    [property: JsonPropertyName("requestedItemId")] string RequestedItemId,
+    [property: JsonPropertyName("ownerItemId")] string OwnerItemId,
+    [property: JsonPropertyName("titleName")] string TitleName,
+    [property: JsonPropertyName("titleKind")] string TitleKind,
+    [property: JsonPropertyName("viewedKind")] string ViewedKind,
+    [property: JsonPropertyName("hasBackdrop")] bool HasBackdrop,
+    [property: JsonPropertyName("global")] AppearanceDto Global,
+    [property: JsonPropertyName("override")] AppearanceOverrideDto Override,
+    [property: JsonPropertyName("effective")] AppearanceDto Effective,
+    [property: JsonPropertyName("revision")] string Revision);
 
 /// <summary>Administrator view of global settings.</summary>
-public sealed record GlobalAppearanceDto(AppearanceDto Values, string Revision);
+public sealed record GlobalAppearanceDto(
+    [property: JsonPropertyName("values")] AppearanceDto Values,
+    [property: JsonPropertyName("revision")] string Revision);
 
 /// <summary>One administrator table row.</summary>
 public sealed record ConfiguredTitleDto(
-    string ItemId,
-    string TitleName,
-    string? TitleKind,
-    bool IsMissing,
-    AppearanceOverrideDto Override,
-    AppearanceDto Effective,
-    string Revision);
+    [property: JsonPropertyName("itemId")] string ItemId,
+    [property: JsonPropertyName("titleName")] string TitleName,
+    [property: JsonPropertyName("titleKind")] string? TitleKind,
+    [property: JsonPropertyName("isMissing")] bool IsMissing,
+    [property: JsonPropertyName("override")] AppearanceOverrideDto Override,
+    [property: JsonPropertyName("effective")] AppearanceDto Effective,
+    [property: JsonPropertyName("revision")] string Revision);
 
 /// <summary>Complete administrator configuration view.</summary>
-public sealed record AdminSnapshotDto(GlobalAppearanceDto Global, IReadOnlyList<ConfiguredTitleDto> Titles);
+public sealed record AdminSnapshotDto(
+    [property: JsonPropertyName("global")] GlobalAppearanceDto Global,
+    [property: JsonPropertyName("titles")] IReadOnlyList<ConfiguredTitleDto> Titles);
+
+/// <summary>Current browser session capabilities.</summary>
+public sealed record SessionDto([property: JsonPropertyName("canManage")] bool CanManage);
 
 /// <summary>Request to change global values.</summary>
 public sealed record SaveGlobalRequest(
-    string? ExpectedRevision,
-    int BackdropOpacity,
-    int BackdropBlur,
-    int PanelGlassOpacity,
-    int PanelGlassBlur);
+    [property: JsonPropertyName("expectedRevision")] string? ExpectedRevision,
+    [property: JsonPropertyName("backdropOpacity")] int BackdropOpacity,
+    [property: JsonPropertyName("backdropBlur")] int BackdropBlur,
+    [property: JsonPropertyName("panelGlassOpacity")] int PanelGlassOpacity,
+    [property: JsonPropertyName("panelGlassBlur")] int PanelGlassBlur);
 
 /// <summary>Request to change one title override.</summary>
 public sealed record SaveTitleRequest(
-    string? ExpectedRevision,
-    int? BackdropOpacity,
-    int? BackdropBlur,
-    int? PanelGlassOpacity,
-    int? PanelGlassBlur);
+    [property: JsonPropertyName("expectedRevision")] string? ExpectedRevision,
+    [property: JsonPropertyName("backdropOpacity")] int? BackdropOpacity,
+    [property: JsonPropertyName("backdropBlur")] int? BackdropBlur,
+    [property: JsonPropertyName("panelGlassOpacity")] int? PanelGlassOpacity,
+    [property: JsonPropertyName("panelGlassBlur")] int? PanelGlassBlur);
 
 internal static class TransportMapper
 {

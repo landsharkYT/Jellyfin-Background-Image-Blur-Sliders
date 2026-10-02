@@ -3,9 +3,38 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openTitleEditor } from '../src/editor';
 
+const editable = {
+  requestedItemId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  ownerItemId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  titleName: 'Example',
+  titleKind: 'Series' as const,
+  viewedKind: 'Series' as const,
+  hasBackdrop: true,
+  global: {
+    backdropOpacity: 100,
+    backdropBlur: 0,
+    panelGlassOpacity: 70,
+    panelGlassBlur: 12
+  },
+  override: {
+    backdropOpacity: null,
+    backdropBlur: null,
+    panelGlassOpacity: null,
+    panelGlassBlur: null
+  },
+  effective: {
+    backdropOpacity: 100,
+    backdropBlur: 0,
+    panelGlassOpacity: 70,
+    panelGlassBlur: 12
+  },
+  revision: '0'
+};
+
 describe('title editor loading', () => {
   afterEach(() => {
     document.body.replaceChildren();
+    vi.unstubAllGlobals();
   });
 
   it('appears immediately and shows a request failure instead of leaving a dead overlay', async () => {
@@ -33,5 +62,45 @@ describe('title editor loading', () => {
     expect(close?.hidden).toBe(false);
     close?.click();
     expect(document.querySelector('.bibe-dialog-backdrop')).toBeNull();
+  });
+
+  it('previews an enabled slider and uses consistent Jellyfin button classes', async () => {
+    vi.stubGlobal('CSS', { supports: () => true });
+    const preview = vi.fn();
+    const api = {
+      getEditor: vi.fn(async () => editable),
+      saveTitle: vi.fn(),
+      resetTitle: vi.fn()
+    };
+
+    await openTitleEditor(api, editable.requestedItemId, preview);
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.bibe-actions button');
+    expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      expect(button.classList).toContain('emby-button');
+      expect(button.classList).toContain('raised');
+      expect(button.classList).toContain('block');
+      expect(button.classList).toContain('formDialogFooterItem');
+    }
+    expect(document.querySelector('.bibe-cancel')?.classList).toContain('button-cancel');
+
+    const inherit = document.querySelector<HTMLInputElement>('#backdropOpacity-inherit');
+    const range = document.querySelector<HTMLInputElement>('#backdropOpacity-range');
+    if (inherit === null || range === null) {
+      throw new Error('Backdrop opacity controls were not rendered.');
+    }
+    inherit.checked = false;
+    inherit.dispatchEvent(new Event('change'));
+    range.value = '40';
+    range.dispatchEvent(new Event('input'));
+
+    expect(range.disabled).toBe(false);
+    expect(preview).toHaveBeenLastCalledWith({
+      backdropOpacity: 40,
+      backdropBlur: 0,
+      panelGlassOpacity: 70,
+      panelGlassBlur: 12
+    });
   });
 });

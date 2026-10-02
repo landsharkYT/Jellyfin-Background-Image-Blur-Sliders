@@ -33,7 +33,7 @@ export async function openTitleEditor(
       <p class="bibe-dialog-note">Loading settings...</p>
       <p class="bibe-error" role="alert"></p>
       <div class="bibe-actions">
-        <button is="emby-button" type="button" class="bibe-load-close" hidden>Close</button>
+        <button is="emby-button" type="button" class="emby-button raised button-cancel block formDialogFooterItem bibe-load-close" hidden>Close</button>
       </div>
     </section>`;
   const note = requireElement<HTMLElement>(loading, '.bibe-dialog-note');
@@ -71,9 +71,9 @@ function showEditor(
         <div class="bibe-controls"></div>
         <p class="bibe-error" role="alert"></p>
         <div class="bibe-actions">
-          <button is="emby-button" type="button" class="raised bibe-reset">Reset title</button>
-          <button is="emby-button" type="button" class="bibe-cancel">Cancel</button>
-          <button is="emby-button" type="submit" class="raised button-submit">Save</button>
+          <button is="emby-button" type="button" class="emby-button raised button-cancel block formDialogFooterItem bibe-reset">Reset title</button>
+          <button is="emby-button" type="button" class="emby-button raised button-cancel block formDialogFooterItem bibe-cancel">Cancel</button>
+          <button is="emby-button" type="submit" class="emby-button raised button-submit block formDialogFooterItem">Save</button>
         </div>
       </form>
     </section>`;

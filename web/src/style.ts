@@ -47,7 +47,13 @@ const css = `
 .bibe-number input { width: 4.5rem; }
 .bibe-inherit { grid-column: 1 / -1; font-size: .9rem; opacity: .85; }
 .bibe-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; margin-top: 1.2rem; }
-.bibe-actions button { min-width: 6rem; }
+.bibe-actions .formDialogFooterItem {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 8rem;
+  max-width: none;
+  margin: 0 !important;
+}
 .bibe-error { color: #ffb4ab; min-height: 1.25rem; }
 .bibe-admin { max-width: 72rem; margin: 0 auto; padding: 1rem; }
 .bibe-admin-grid { display: grid; grid-template-columns: minmax(18rem, 1fr) minmax(18rem, 1fr); gap: 1.25rem; }
@@ -78,8 +84,11 @@ export function applyAppearance(values: Appearance): void {
     return;
   }
 
-  const backdrop = page.querySelector<HTMLElement>('#itemBackdrop, .backdropImage');
-  if (backdrop !== null) {
+  const backdrops = new Set<HTMLElement>([
+    ...document.querySelectorAll<HTMLElement>('.backdropContainer .backdropImage'),
+    ...page.querySelectorAll<HTMLElement>('#itemBackdrop, .backdropImage')
+  ]);
+  for (const backdrop of backdrops) {
     const existing = window.getComputedStyle(backdrop).filter;
     backdrop.style.setProperty('--bibe-original-backdrop-filter', existing === 'none' ? '' : existing);
     backdrop.classList.add('bibe-backdrop');

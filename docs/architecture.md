@@ -85,7 +85,7 @@ The vanilla TypeScript bundle contains these modules:
 
 The loader stores one namespaced disposal callback on `window`. Reloading the script disposes the previous observers, listeners, dialogs, and style state before mounting a new client.
 
-Every detail-page session has an `AbortController`. Navigation aborts stale requests and removes only `bibe-*` classes, attributes, variables, and elements.
+`DetailAppearanceSession` owns navigation request state. Repeated DOM mutations reuse the in-flight request for the current item. A request identity prevents an older response from replacing a newer route. While the next Effective Appearance loads, the client keeps the previous appearance visible and applies it to new page elements. After loading, DOM reconciliation updates CSS variables without clearing existing `bibe-*` styles or restarting their transitions.
 
 Runtime wire validators reject malformed responses before values reach CSS. Panel Glass changes background paint and `backdrop-filter`; it never sets `opacity` or `filter` on panel contents.
 

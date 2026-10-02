@@ -7,6 +7,7 @@ describe('detail-page appearance', () => {
   afterEach(() => {
     clearAppearance();
     document.body.replaceChildren();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -50,6 +51,34 @@ describe('detail-page appearance', () => {
 
     const backdrop = document.querySelector<HTMLElement>('.backdropImage');
     expect(backdrop?.style.getPropertyValue('--bibe-base-backdrop-filter')).toBe('blur(24px) saturate(1.35)');
+  });
+
+  it('updates an existing backdrop without clearing or recapturing its theme filter', () => {
+    vi.stubGlobal('CSS', { supports: () => true });
+    document.body.innerHTML = `
+      <div class="backdropContainer"><div class="backdropImage" style="filter: blur(24px) saturate(1.35)"></div></div>
+      <main id="itemDetailPage"></main>`;
+    const computedStyle = vi.spyOn(window, 'getComputedStyle');
+
+    applyAppearance({
+      backdropOpacity: 100,
+      backdropBlur: 0,
+      panelGlassOpacity: 70,
+      panelGlassBlur: 12
+    }, true);
+    computedStyle.mockClear();
+    applyAppearance({
+      backdropOpacity: 75,
+      backdropBlur: 4,
+      panelGlassOpacity: 55,
+      panelGlassBlur: 8
+    }, false);
+
+    const backdrop = document.querySelector<HTMLElement>('.backdropImage');
+    expect(computedStyle).not.toHaveBeenCalled();
+    expect(backdrop?.style.getPropertyValue('--bibe-theme-backdrop-filter')).toBe('blur(24px) saturate(1.35)');
+    expect(backdrop?.style.getPropertyValue('--bibe-base-backdrop-filter')).toBe('saturate(1.35)');
+    expect(backdrop?.style.getPropertyValue('--bibe-backdrop-opacity')).toBe('75');
   });
 
   it('installs selectors that outrank the active detail-page theme', () => {

@@ -83,7 +83,6 @@ export function installStyles(): void {
 }
 
 export function applyAppearance(values: Appearance, preserveBackdropBlur: boolean): void {
-  clearAppearance();
   const page = findDetailPage();
   if (page === null) {
     return;
@@ -94,10 +93,16 @@ export function applyAppearance(values: Appearance, preserveBackdropBlur: boolea
     ...page.querySelectorAll<HTMLElement>('#itemBackdrop, .backdropImage')
   ]);
   for (const backdrop of backdrops) {
-    const existing = window.getComputedStyle(backdrop).filter;
+    const alreadyStyled = backdrop.classList.contains('bibe-backdrop');
+    const themeFilter = alreadyStyled
+      ? backdrop.style.getPropertyValue('--bibe-theme-backdrop-filter')
+      : normalizeFilter(window.getComputedStyle(backdrop).filter);
+    if (!alreadyStyled) {
+      backdrop.style.setProperty('--bibe-theme-backdrop-filter', themeFilter);
+    }
     backdrop.style.setProperty(
       '--bibe-base-backdrop-filter',
-      preserveBackdropBlur ? normalizeFilter(existing) : removeBlur(existing)
+      preserveBackdropBlur ? themeFilter : removeBlur(themeFilter)
     );
     backdrop.classList.add('bibe-backdrop');
     backdrop.style.setProperty('--bibe-backdrop-opacity', String(values.backdropOpacity));
@@ -124,6 +129,7 @@ export function clearAppearance(): void {
     for (const property of [
       '--bibe-backdrop-opacity',
       '--bibe-backdrop-blur',
+      '--bibe-theme-backdrop-filter',
       '--bibe-base-backdrop-filter',
       '--bibe-panel-rgb',
       '--bibe-panel-opacity',

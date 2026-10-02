@@ -1,7 +1,7 @@
 import { AppearanceApi } from './api';
 import { activateEditorAction, decorateActionSheet } from './actionSheet';
 import { openTitleEditor } from './editor';
-import type { EffectiveAppearance } from './model';
+import { DetailAppearanceSession } from './navigation';
 import { applyAppearance, clearAppearance, installStyles } from './style';
 
 window.__backgroundBlurEditorDispose?.();
@@ -30,39 +30,19 @@ async function mount(): Promise<void> {
   installStyles();
   const api = new AppearanceApi();
   const session = await api.getSession();
-  let current: EffectiveAppearance | null = null;
-  let generation = 0;
   let scheduled = 0;
   let awaitingItemMenu = false;
+  const appearances = new DetailAppearanceSession({
+    load: (itemId) => api.getEffective(itemId),
+    render: (appearance) => applyAppearance(appearance.values, appearance.backdropBlurInherited),
+    clear: clearAppearance
+  });
 
-  const sync = async (): Promise<void> => {
+  const sync = (): void => {
     const itemId = readItemId();
+    appearances.sync(itemId);
     if (itemId === null) {
-      generation += 1;
-      current = null;
-      clearAppearance();
       removeActions();
-      return;
-    }
-
-    if (current?.requestedItemId === itemId) {
-      applyAppearance(current.values, current.backdropBlurInherited);
-      return;
-    }
-
-    const ownGeneration = ++generation;
-    try {
-      const loaded = await api.getEffective(itemId);
-      if (generation !== ownGeneration || readItemId() !== itemId) {
-        return;
-      }
-      current = loaded;
-      applyAppearance(loaded.values, loaded.backdropBlurInherited);
-    } catch {
-      if (generation === ownGeneration) {
-        current = null;
-        clearAppearance();
-      }
     }
   };
 
@@ -72,12 +52,13 @@ async function mount(): Promise<void> {
     }
     scheduled = window.setTimeout(() => {
       scheduled = 0;
-      void sync();
+      sync();
     }, 40);
   };
 
   const observer = new MutationObserver(() => {
     scheduleSync();
+    const current = appearances.current;
     if (session.canManage && current !== null && awaitingItemMenu) {
       awaitingItemMenu = !decorateActionSheet(current);
     }
@@ -91,6 +72,7 @@ async function mount(): Promise<void> {
   document.addEventListener('viewbeforehide', onNavigation, true);
 
   const onClick = (event: MouseEvent): void => {
+    const current = appearances.current;
     if (!session.canManage || current === null || !(event.target instanceof Element)) {
       return;
     }
@@ -98,10 +80,7 @@ async function mount(): Promise<void> {
     const requestedItemId = current.requestedItemId;
     if (activateEditorAction(event, () => {
       void openTitleEditor(api, requestedItemId, (values, backdropBlurInherited) => {
-        applyAppearance(values, backdropBlurInherited);
-        if (current !== null) {
-          current = { ...current, values, backdropBlurInherited };
-        }
+        appearances.updateCurrent(values, backdropBlurInherited);
       });
     })) {
       return;
@@ -110,6 +89,7 @@ async function mount(): Promise<void> {
     if (event.target.closest('.btnMoreCommands') !== null) {
       awaitingItemMenu = true;
       window.setTimeout(() => {
+        const current = appearances.current;
         if (current !== null) {
           awaitingItemMenu = !decorateActionSheet(current);
         }
@@ -122,7 +102,6 @@ async function mount(): Promise<void> {
   document.addEventListener('click', onClick, true);
 
   window.__backgroundBlurEditorDispose = () => {
-    generation += 1;
     observer.disconnect();
     window.removeEventListener('hashchange', onNavigation);
     window.removeEventListener('popstate', onNavigation);
@@ -132,13 +111,13 @@ async function mount(): Promise<void> {
     if (scheduled !== 0) {
       window.clearTimeout(scheduled);
     }
-    clearAppearance();
+    appearances.dispose();
     removeActions();
     document.querySelector('.bibe-dialog-backdrop')?.remove();
     document.getElementById('bibe-styles')?.remove();
   };
 
-  await sync();
+  sync();
 }
 
 function readItemId(): string | null {

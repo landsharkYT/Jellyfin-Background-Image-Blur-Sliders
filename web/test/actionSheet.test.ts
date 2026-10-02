@@ -123,7 +123,7 @@ describe('action-sheet viewport fit', () => {
     expect(sheet.style.left).toBe('230px');
   });
 
-  it('corrects the position Jellyfin assigns after the sheet is decorated', async () => {
+  it('corrects the full-size sheet after Jellyfin finishes its opening animation', async () => {
     vi.useFakeTimers();
     document.body.innerHTML = `
       <div class="dialogContainer">
@@ -137,17 +137,20 @@ describe('action-sheet viewport fit', () => {
     }
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 500 });
     Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 500 });
-    sheet.style.left = '100px';
+    let scale = 0.5;
+    sheet.style.left = '300px';
     sheet.getBoundingClientRect = () => {
-      const left = Number.parseFloat(sheet.style.left);
+      const layoutLeft = Number.parseFloat(sheet.style.left);
+      const width = 260 * scale;
+      const left = layoutLeft + ((260 - width) / 2);
       return {
         x: left,
         y: 100,
         left,
         top: 100,
-        right: left + 260,
+        right: left + width,
         bottom: 500,
-        width: 260,
+        width,
         height: 400,
         toJSON: () => ({})
       };
@@ -155,11 +158,12 @@ describe('action-sheet viewport fit', () => {
 
     expect(decorateActionSheet(appearance)).toBe(true);
     vi.advanceTimersByTime(0);
-    sheet.style.left = '300px';
-    await Promise.resolve();
+    scale = 1;
+    sheet.dispatchEvent(new Event('animationend'));
     vi.advanceTimersByTime(0);
 
     expect(sheet.style.left).toBe('230px');
+    sheet.dispatchEvent(new Event('close'));
     vi.useRealTimers();
   });
 });

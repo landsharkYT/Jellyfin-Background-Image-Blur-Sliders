@@ -111,6 +111,11 @@ function keepActionSheetInViewport(sheet: HTMLElement): void {
   mutationObserver.observe(sheet, { attributes: true, attributeFilter: ['class', 'style'] });
   const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
   resizeObserver?.observe(sheet);
+  const onAnimationFinished = (event: Event): void => {
+    if (event.target === sheet) {
+      schedule();
+    }
+  };
   const stop = (): void => {
     if (pending !== 0) {
       window.clearTimeout(pending);
@@ -119,10 +124,14 @@ function keepActionSheetInViewport(sheet: HTMLElement): void {
     viewport?.removeEventListener('resize', schedule);
     mutationObserver.disconnect();
     resizeObserver?.disconnect();
+    sheet.removeEventListener('animationend', onAnimationFinished);
+    sheet.removeEventListener('animationcancel', onAnimationFinished);
   };
 
   window.addEventListener('resize', schedule);
   viewport?.addEventListener('resize', schedule);
+  sheet.addEventListener('animationend', onAnimationFinished);
+  sheet.addEventListener('animationcancel', onAnimationFinished);
   sheet.addEventListener('close', stop, { once: true });
   schedule();
 }

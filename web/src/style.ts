@@ -82,7 +82,7 @@ export function installStyles(): void {
   document.head.append(style);
 }
 
-export function applyAppearance(values: Appearance): void {
+export function applyAppearance(values: Appearance, preserveBackdropBlur: boolean): void {
   clearAppearance();
   const page = findDetailPage();
   if (page === null) {
@@ -95,7 +95,10 @@ export function applyAppearance(values: Appearance): void {
   ]);
   for (const backdrop of backdrops) {
     const existing = window.getComputedStyle(backdrop).filter;
-    backdrop.style.setProperty('--bibe-base-backdrop-filter', removeBlur(existing));
+    backdrop.style.setProperty(
+      '--bibe-base-backdrop-filter',
+      preserveBackdropBlur ? normalizeFilter(existing) : removeBlur(existing)
+    );
     backdrop.classList.add('bibe-backdrop');
     backdrop.style.setProperty('--bibe-backdrop-opacity', String(values.backdropOpacity));
     backdrop.style.setProperty('--bibe-backdrop-blur', String(values.backdropBlur));
@@ -132,10 +135,11 @@ export function clearAppearance(): void {
 }
 
 function removeBlur(filter: string): string {
-  if (filter === 'none') {
-    return '';
-  }
-  return filter.replace(/\bblur\([^)]*\)/giu, '').replace(/\s+/gu, ' ').trim();
+  return normalizeFilter(filter.replace(/\bblur\([^)]*\)/giu, ''));
+}
+
+function normalizeFilter(filter: string): string {
+  return filter === 'none' ? '' : filter.replace(/\s+/gu, ' ').trim();
 }
 
 export function supportsPanelBlur(): boolean {

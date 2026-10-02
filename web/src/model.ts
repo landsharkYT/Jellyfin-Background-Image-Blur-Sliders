@@ -19,6 +19,7 @@ export type EffectiveAppearance = Readonly<{
   titleKind: 'Movie' | 'Series';
   viewedKind: 'Movie' | 'Series' | 'Season' | 'Episode';
   hasBackdrop: boolean;
+  backdropBlurInherited: boolean;
   values: Appearance;
 }>;
 
@@ -73,6 +74,7 @@ export function parseEffective(value: unknown): EffectiveAppearance {
     titleKind: requireTitleKind(record.titleKind),
     viewedKind: requireViewedKind(record.viewedKind),
     hasBackdrop: requireBoolean(record.hasBackdrop, 'hasBackdrop'),
+    backdropBlurInherited: requireBoolean(record.backdropBlurInherited, 'backdropBlurInherited'),
     values: parseAppearance(record.values)
   };
 }

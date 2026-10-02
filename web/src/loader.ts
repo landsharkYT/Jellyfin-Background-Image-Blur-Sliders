@@ -46,7 +46,7 @@ async function mount(): Promise<void> {
     }
 
     if (current?.requestedItemId === itemId) {
-      applyAppearance(current.values);
+      applyAppearance(current.values, current.backdropBlurInherited);
       return;
     }
 
@@ -57,7 +57,7 @@ async function mount(): Promise<void> {
         return;
       }
       current = loaded;
-      applyAppearance(loaded.values);
+      applyAppearance(loaded.values, loaded.backdropBlurInherited);
     } catch {
       if (generation === ownGeneration) {
         current = null;
@@ -97,10 +97,10 @@ async function mount(): Promise<void> {
 
     const requestedItemId = current.requestedItemId;
     if (activateEditorAction(event, () => {
-      void openTitleEditor(api, requestedItemId, values => {
-        applyAppearance(values);
+      void openTitleEditor(api, requestedItemId, (values, backdropBlurInherited) => {
+        applyAppearance(values, backdropBlurInherited);
         if (current !== null) {
-          current = { ...current, values };
+          current = { ...current, values, backdropBlurInherited };
         }
       });
     })) {

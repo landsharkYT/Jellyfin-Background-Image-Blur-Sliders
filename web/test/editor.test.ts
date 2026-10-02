@@ -101,6 +101,23 @@ describe('title editor loading', () => {
       backdropBlur: 0,
       panelGlassOpacity: 70,
       panelGlassBlur: 12
-    });
+    }, true);
+
+    const blurInherit = document.querySelector<HTMLInputElement>('#backdropBlur-inherit');
+    const blurRange = document.querySelector<HTMLInputElement>('#backdropBlur-range');
+    if (blurInherit === null || blurRange === null) {
+      throw new Error('Backdrop blur controls were not rendered.');
+    }
+    blurInherit.checked = false;
+    blurInherit.dispatchEvent(new Event('change'));
+    blurRange.value = '0';
+    blurRange.dispatchEvent(new Event('input'));
+
+    expect(preview).toHaveBeenLastCalledWith({
+      backdropOpacity: 40,
+      backdropBlur: 0,
+      panelGlassOpacity: 70,
+      panelGlassBlur: 12
+    }, false);
   });
 });

@@ -21,7 +21,7 @@ describe('detail-page appearance', () => {
       backdropBlur: 18,
       panelGlassOpacity: 55,
       panelGlassBlur: 9
-    });
+    }, false);
 
     const backdrop = document.querySelector<HTMLElement>('.backdropContainer .backdropImage');
     expect(backdrop?.classList).toContain('bibe-backdrop');
@@ -33,6 +33,23 @@ describe('detail-page appearance', () => {
     const panel = document.querySelector<HTMLElement>('.detailRibbon');
     expect(panel?.style.getPropertyValue('--bibe-panel-opacity')).toBe('55');
     expect(panel?.style.getPropertyValue('--bibe-panel-blur')).toBe('9');
+  });
+
+  it('preserves theme blur when backdrop blur is inherited', () => {
+    vi.stubGlobal('CSS', { supports: () => true });
+    document.body.innerHTML = `
+      <div class="backdropContainer"><div class="backdropImage" style="filter: blur(24px) saturate(1.35)"></div></div>
+      <main id="itemDetailPage"></main>`;
+
+    applyAppearance({
+      backdropOpacity: 100,
+      backdropBlur: 0,
+      panelGlassOpacity: 70,
+      panelGlassBlur: 12
+    }, true);
+
+    const backdrop = document.querySelector<HTMLElement>('.backdropImage');
+    expect(backdrop?.style.getPropertyValue('--bibe-base-backdrop-filter')).toBe('blur(24px) saturate(1.35)');
   });
 
   it('installs selectors that outrank the active detail-page theme', () => {

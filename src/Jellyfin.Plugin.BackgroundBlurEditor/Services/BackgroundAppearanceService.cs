@@ -38,6 +38,7 @@ public sealed class BackgroundAppearanceService : IBackgroundAppearanceService
             title.OwnerKind,
             title.ViewedKind,
             title.HasBackdrop,
+            values.BackdropBlur is null,
             AppearanceResolver.Merge(snapshot.Global.Values, values)));
     }
 

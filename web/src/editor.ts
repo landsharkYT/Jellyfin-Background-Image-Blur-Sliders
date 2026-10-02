@@ -7,7 +7,7 @@ import {
 } from './model';
 import { supportsPanelBlur } from './style';
 
-type Preview = (values: Appearance) => void;
+type Preview = (values: Appearance, backdropBlurInherited: boolean) => void;
 type FieldName = 'backdropOpacity' | 'backdropBlur' | 'panelGlassOpacity' | 'panelGlassBlur';
 type EditorApi = Pick<AppearanceApi, 'getEditor' | 'saveTitle' | 'resetTitle'>;
 
@@ -105,7 +105,7 @@ function showEditor(
   const reset = requireElement<HTMLButtonElement>(backdrop, '.bibe-reset');
 
   const restoreAndClose = (): void => {
-    preview(editable.effective);
+    preview(editable.effective, editable.override.backdropBlur === null);
     backdrop.remove();
   };
 
@@ -115,16 +115,16 @@ function showEditor(
     const inherit = requireInput(controls, `${field.key}-inherit`);
     range.addEventListener('input', () => {
       number.value = range.value;
-      preview(mergeAppearance(editable.global, readOverride(controls, editable)));
+      previewCurrent(controls, editable, preview);
     });
     number.addEventListener('input', () => {
       range.value = number.value;
-      preview(mergeAppearance(editable.global, readOverride(controls, editable)));
+      previewCurrent(controls, editable, preview);
     });
     inherit.addEventListener('change', () => {
       range.disabled = inherit.checked || isUnavailable(field.key, editable);
       number.disabled = inherit.checked || isUnavailable(field.key, editable);
-      preview(mergeAppearance(editable.global, readOverride(controls, editable)));
+      previewCurrent(controls, editable, preview);
     });
   }
 
@@ -142,7 +142,7 @@ function showEditor(
     setBusy(form, true);
     try {
       const saved = await api.resetTitle(editable.ownerItemId, editable.revision);
-      preview(saved.effective);
+      preview(saved.effective, saved.override.backdropBlur === null);
       backdrop.remove();
       onCommitted();
     } catch (caught: unknown) {
@@ -162,7 +162,7 @@ function showEditor(
         readOverride(controls, editable),
         editable.revision
       );
-      preview(saved.effective);
+      preview(saved.effective, saved.override.backdropBlur === null);
       backdrop.remove();
       onCommitted();
     } catch (caught: unknown) {
@@ -190,12 +190,17 @@ async function handleError(
     if (window.confirm('Reload the current saved values?')) {
       const latest = await api.getEditor(editable.ownerItemId);
       backdrop.remove();
-      preview(latest.effective);
+      preview(latest.effective, latest.override.backdropBlur === null);
       showEditor(api, latest, preview, onCommitted);
     }
     return;
   }
   error.textContent = caught instanceof Error ? caught.message : 'Could not save the appearance.';
+}
+
+function previewCurrent(root: ParentNode, editable: EditableAppearance, preview: Preview): void {
+  const override = readOverride(root, editable);
+  preview(mergeAppearance(editable.global, override), override.backdropBlur === null);
 }
 
 function controlMarkup(field: Readonly<{ key: FieldName; label: string; unit: string; maximum: number }>): string {

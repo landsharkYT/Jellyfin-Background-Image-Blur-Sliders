@@ -6,6 +6,25 @@ namespace Jellyfin.Plugin.BackgroundBlurEditor.Tests;
 public sealed class ApiTransportTests
 {
     [Fact]
+    public void EffectiveAppearanceIncludesBackdropBlurInheritance()
+    {
+        var appearance = new AppearanceDto(100, 0, 70, 12);
+        var effective = new EffectiveAppearanceDto(
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "Example",
+            "Series",
+            "Series",
+            true,
+            true,
+            appearance);
+
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(effective));
+
+        Assert.True(document.RootElement.GetProperty("backdropBlurInherited").GetBoolean());
+    }
+
+    [Fact]
     public void AdminSnapshotUsesTheCamelCaseBrowserContract()
     {
         var appearance = new AppearanceDto(100, 0, 70, 12);

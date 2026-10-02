@@ -32,6 +32,7 @@ describe('appearance model', () => {
       titleKind: 'Series',
       viewedKind: 'Episode',
       hasBackdrop: true,
+      backdropBlurInherited: true,
       values: {
         backdropOpacity: 90,
         backdropBlur: 7,
@@ -49,6 +50,7 @@ describe('appearance model', () => {
       titleKind: 'Movie',
       viewedKind: 'Movie',
       hasBackdrop: true,
+      backdropBlurInherited: true,
       values: {
         backdropOpacity: 101,
         backdropBlur: 0,

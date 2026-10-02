@@ -11,6 +11,7 @@ const appearance = {
   titleKind: 'Movie',
   viewedKind: 'Movie',
   hasBackdrop: true,
+  backdropBlurInherited: true,
   values: {
     backdropOpacity: 100,
     backdropBlur: 0,

@@ -25,6 +25,7 @@ public sealed record EffectiveAppearanceDto(
     [property: JsonPropertyName("titleKind")] string TitleKind,
     [property: JsonPropertyName("viewedKind")] string ViewedKind,
     [property: JsonPropertyName("hasBackdrop")] bool HasBackdrop,
+    [property: JsonPropertyName("backdropBlurInherited")] bool BackdropBlurInherited,
     [property: JsonPropertyName("values")] AppearanceDto Values);
 
 /// <summary>Editable values available to an administrator.</summary>
@@ -108,6 +109,7 @@ internal static class TransportMapper
             value.TitleKind.ToString(),
             value.ViewedKind.ToString(),
             value.HasBackdrop,
+            value.BackdropBlurInherited,
             ToDto(value.Values));
     }
 

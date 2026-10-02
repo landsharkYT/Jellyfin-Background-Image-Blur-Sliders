@@ -10,6 +10,7 @@ public sealed record EffectiveAppearance(
     TitleKind TitleKind,
     ViewedKind ViewedKind,
     bool HasBackdrop,
+    bool BackdropBlurInherited,
     Appearance Values);
 
 /// <summary>

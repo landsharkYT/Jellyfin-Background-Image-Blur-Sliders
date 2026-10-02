@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { activateEditorAction, decorateActionSheet } from '../src/actionSheet';
+import {
+  activateEditorAction,
+  decorateActionSheet,
+  fitActionSheetToViewport
+} from '../src/actionSheet';
 import type { EffectiveAppearance } from '../src/model';
 
 const appearance = {
@@ -90,5 +94,32 @@ describe('editor command activation', () => {
     expect(sheet.close).not.toHaveBeenCalled();
     expect(opened).toHaveBeenCalledOnce();
     vi.useRealTimers();
+  });
+});
+
+describe('action-sheet viewport fit', () => {
+  it('moves a widened sheet left by its right-edge overflow', () => {
+    document.body.innerHTML = '<dialog class="actionSheet"></dialog>';
+    const sheet = document.querySelector<HTMLElement>('.actionSheet');
+    if (sheet === null) {
+      throw new Error('Test action sheet was not created.');
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 500 });
+    sheet.style.left = '300px';
+    sheet.getBoundingClientRect = () => ({
+      x: Number.parseFloat(sheet.style.left),
+      y: 100,
+      left: Number.parseFloat(sheet.style.left),
+      top: 100,
+      right: Number.parseFloat(sheet.style.left) + 260,
+      bottom: 500,
+      width: 260,
+      height: 400,
+      toJSON: () => ({})
+    });
+
+    fitActionSheetToViewport(sheet);
+
+    expect(sheet.style.left).toBe('230px');
   });
 });

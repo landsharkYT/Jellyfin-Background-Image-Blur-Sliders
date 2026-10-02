@@ -1,6 +1,8 @@
 import type { EffectiveAppearance } from './model';
 import { applyPanel } from './style';
 
+const VIEWPORT_GUTTER = 10;
+
 export function activateEditorAction(event: MouseEvent, openEditor: () => void): boolean {
   if (!(event.target instanceof Element)) {
     return false;
@@ -44,5 +46,52 @@ export function decorateActionSheet(current: EffectiveAppearance): boolean {
       : 'Edit background appearance';
   }
   scroller.append(button);
+  keepActionSheetInViewport(sheet);
   return true;
+}
+
+export function fitActionSheetToViewport(sheet: HTMLElement): void {
+  if (sheet.classList.contains('actionsheet-fullscreen')) {
+    return;
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+  const availableWidth = Math.max(0, viewportWidth - (VIEWPORT_GUTTER * 2));
+  const bounds = sheet.getBoundingClientRect();
+  const width = Math.min(bounds.width, availableWidth);
+  if (bounds.width > availableWidth) {
+    sheet.style.maxWidth = `${availableWidth}px`;
+  }
+
+  const furthestLeft = Math.max(VIEWPORT_GUTTER, viewportWidth - VIEWPORT_GUTTER - width);
+  const left = Math.min(Math.max(bounds.left, VIEWPORT_GUTTER), furthestLeft);
+  if (Math.abs(left - bounds.left) >= 0.5) {
+    sheet.style.left = `${left}px`;
+  }
+}
+
+function keepActionSheetInViewport(sheet: HTMLElement): void {
+  let pending = 0;
+  const schedule = (): void => {
+    if (pending !== 0) {
+      return;
+    }
+    pending = window.setTimeout(() => {
+      pending = 0;
+      fitActionSheetToViewport(sheet);
+    }, 0);
+  };
+  const viewport = window.visualViewport;
+  const stop = (): void => {
+    if (pending !== 0) {
+      window.clearTimeout(pending);
+    }
+    window.removeEventListener('resize', schedule);
+    viewport?.removeEventListener('resize', schedule);
+  };
+
+  window.addEventListener('resize', schedule);
+  viewport?.addEventListener('resize', schedule);
+  sheet.addEventListener('close', stop, { once: true });
+  schedule();
 }

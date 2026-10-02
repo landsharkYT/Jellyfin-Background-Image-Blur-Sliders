@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeAppearance, parseEffective } from '../src/model';
+import { mergeAppearance, parseEditable, parseEffective } from '../src/model';
 
 describe('appearance model', () => {
   it('merges each inherited field independently', () => {
@@ -56,5 +56,32 @@ describe('appearance model', () => {
         panelGlassBlur: 12
       }
     })).toThrow(/backdropOpacity/);
+  });
+
+  it('treats omitted override fields as inherited values', () => {
+    const values = {
+      backdropOpacity: 100,
+      backdropBlur: 0,
+      panelGlassOpacity: 70,
+      panelGlassBlur: 12
+    };
+
+    expect(parseEditable({
+      requestedItemId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      ownerItemId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      titleName: 'Example',
+      titleKind: 'Series',
+      viewedKind: 'Series',
+      hasBackdrop: true,
+      global: values,
+      override: {},
+      effective: values,
+      revision: '0'
+    }).override).toEqual({
+      backdropOpacity: null,
+      backdropBlur: null,
+      panelGlassOpacity: null,
+      panelGlassBlur: null
+    });
   });
 });

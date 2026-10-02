@@ -180,7 +180,7 @@ function requireInteger(value: unknown, minimum: number, maximum: number, label:
 }
 
 function optionalInteger(value: unknown, minimum: number, maximum: number, label: string): number | null {
-  return value === null ? null : requireInteger(value, minimum, maximum, label);
+  return value === null || value === undefined ? null : requireInteger(value, minimum, maximum, label);
 }
 
 function requireTitleKind(value: unknown): 'Movie' | 'Series' {

@@ -41,7 +41,7 @@ Run the complete release build:
 ./scripts/build-release.sh
 ```
 
-The command installs locked web dependencies, type-checks and tests the TypeScript code, builds the embedded bundles, runs the .NET tests, and creates `artifacts/background-blur-editor-0.1.3.zip`.
+The command installs locked web dependencies, type-checks and tests the TypeScript code, builds the embedded bundles, runs the .NET tests, and creates `artifacts/background-blur-editor-0.1.4.zip`.
 
 Use `DOTNET_COMMAND=/path/to/dotnet` when the .NET 9 executable is not named `dotnet`.
 

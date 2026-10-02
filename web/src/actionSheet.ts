@@ -12,24 +12,7 @@ export function activateEditorAction(event: MouseEvent, openEditor: () => void):
   }
 
   event.preventDefault();
-  const sheet = action.closest<HTMLElement>('.actionSheet');
-  if (sheet === null) {
-    window.setTimeout(openEditor, 0);
-    return true;
-  }
-
-  let opened = false;
-  let fallback = 0;
-  const openOnce = (): void => {
-    if (opened) {
-      return;
-    }
-    opened = true;
-    window.clearTimeout(fallback);
-    openEditor();
-  };
-  sheet.addEventListener('close', openOnce, { once: true });
-  fallback = window.setTimeout(openOnce, 500);
+  window.setTimeout(openEditor, 0);
   return true;
 }
 
@@ -53,8 +36,8 @@ export function decorateActionSheet(current: EffectiveAppearance): boolean {
   button.type = 'button';
   button.className = 'listItem listItem-button actionSheetMenuItem emby-button';
   button.dataset.bibeEditAction = 'true';
-  button.innerHTML = '<span class="listItemIcon material-icons" aria-hidden="true">blur_on</span><span class="listItemBody"></span>';
-  const label = button.querySelector<HTMLElement>('.listItemBody');
+  button.innerHTML = '<span class="actionsheetMenuItemIcon listItemIcon listItemIcon-transparent material-icons blur_on" aria-hidden="true"></span><div class="listItemBody actionsheetListItemBody"><div class="listItemBodyText actionSheetItemText"></div></div>';
+  const label = button.querySelector<HTMLElement>('.actionSheetItemText');
   if (label !== null) {
     label.textContent = current.viewedKind === 'Season' || current.viewedKind === 'Episode'
       ? 'Edit series background appearance'

@@ -43,6 +43,10 @@ describe('action-sheet decoration', () => {
     expect(scroller?.querySelector('[data-id="native-one"]')).not.toBeNull();
     expect(scroller?.querySelector('[data-id="native-two"]')).not.toBeNull();
     expect(scroller?.querySelectorAll('[data-bibe-edit-action]')).toHaveLength(1);
+    expect(scroller?.querySelector('[data-bibe-edit-action] .actionsheetMenuItemIcon.blur_on')).not.toBeNull();
+    expect(scroller?.querySelector('[data-bibe-edit-action] .actionsheetListItemBody')).not.toBeNull();
+    expect(scroller?.querySelector('[data-bibe-edit-action] .actionSheetItemText')?.textContent)
+      .toBe('Edit background appearance');
   });
 
   it('waits for Jellyfin to create its native scroller', () => {
@@ -55,6 +59,7 @@ describe('action-sheet decoration', () => {
 
 describe('editor command activation', () => {
   it('allows Jellyfin to receive the click and remove its modal backdrop', () => {
+    vi.useFakeTimers();
     document.body.innerHTML = `
       <div class="dialogContainer">
         <dialog class="actionSheet">
@@ -70,20 +75,19 @@ describe('editor command activation', () => {
     }
     sheet.close = vi.fn();
     const opened = vi.fn();
-    sheet.addEventListener('click', () => {
-      sheet.closest('.dialogContainer')?.remove();
-      sheet.dispatchEvent(new Event('close'));
-    });
+    sheet.addEventListener('click', () => sheet.closest('.dialogContainer')?.remove());
     const listener = (event: MouseEvent): void => {
       activateEditorAction(event, opened);
     };
     document.addEventListener('click', listener, true);
 
     label.click();
+    vi.advanceTimersByTime(0);
 
     document.removeEventListener('click', listener, true);
     expect(document.querySelector('.dialogContainer')).toBeNull();
     expect(sheet.close).not.toHaveBeenCalled();
     expect(opened).toHaveBeenCalledOnce();
+    vi.useRealTimers();
   });
 });

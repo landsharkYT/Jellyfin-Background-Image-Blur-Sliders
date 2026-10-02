@@ -9,6 +9,7 @@ import { supportsPanelBlur } from './style';
 
 type Preview = (values: Appearance) => void;
 type FieldName = 'backdropOpacity' | 'backdropBlur' | 'panelGlassOpacity' | 'panelGlassBlur';
+type EditorApi = Pick<AppearanceApi, 'getEditor' | 'saveTitle' | 'resetTitle'>;
 
 const fields: readonly Readonly<{ key: FieldName; label: string; unit: string; maximum: number }>[] = [
   { key: 'backdropOpacity', label: 'Backdrop opacity', unit: '%', maximum: 100 },
@@ -18,17 +19,43 @@ const fields: readonly Readonly<{ key: FieldName; label: string; unit: string; m
 ];
 
 export async function openTitleEditor(
-  api: AppearanceApi,
+  api: EditorApi,
   itemId: string,
   preview: Preview,
   onCommitted: () => void = () => undefined
 ): Promise<void> {
-  const editable = await api.getEditor(itemId);
-  showEditor(api, editable, preview, onCommitted);
+  document.querySelector('.bibe-dialog-backdrop')?.remove();
+  const loading = document.createElement('div');
+  loading.className = 'bibe-dialog-backdrop';
+  loading.innerHTML = `
+    <section class="bibe-dialog" role="dialog" aria-modal="true" aria-labelledby="bibe-editor-title">
+      <h2 id="bibe-editor-title">Background appearance</h2>
+      <p class="bibe-dialog-note">Loading settings...</p>
+      <p class="bibe-error" role="alert"></p>
+      <div class="bibe-actions">
+        <button is="emby-button" type="button" class="bibe-load-close" hidden>Close</button>
+      </div>
+    </section>`;
+  const note = requireElement<HTMLElement>(loading, '.bibe-dialog-note');
+  const error = requireElement<HTMLElement>(loading, '.bibe-error');
+  const close = requireElement<HTMLButtonElement>(loading, '.bibe-load-close');
+  close.addEventListener('click', () => loading.remove());
+  document.body.append(loading);
+
+  try {
+    const editable = await api.getEditor(itemId);
+    loading.remove();
+    showEditor(api, editable, preview, onCommitted);
+  } catch (caught: unknown) {
+    note.textContent = 'Could not load background appearance.';
+    error.textContent = caught instanceof Error ? caught.message : 'The server request failed.';
+    close.hidden = false;
+    close.focus();
+  }
 }
 
 function showEditor(
-  api: AppearanceApi,
+  api: EditorApi,
   editable: EditableAppearance,
   preview: Preview,
   onCommitted: () => void
@@ -151,7 +178,7 @@ function showEditor(
 
 async function handleError(
   caught: unknown,
-  api: AppearanceApi,
+  api: EditorApi,
   editable: EditableAppearance,
   preview: Preview,
   onCommitted: () => void,
